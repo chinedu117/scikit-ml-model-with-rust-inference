@@ -27,5 +27,11 @@ cargo build --release
 
 Ensure LD_LIBRARY_PATH is set and points to the folder of the onnxruntime.
 
+```
+  ./inference_server 
+  
+```
+
+
 
 
