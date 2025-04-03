@@ -1,9 +1,9 @@
 use clap::{Parser, Subcommand};
-use ort_test::{error_to_response, run};
+use infer::{error_to_response, run};
 type Error = Box<dyn std::error::Error>;
 
 #[derive(Parser)]
-#[command(author = "Chinedu", version, about, long_about = None)]
+#[command(author, version, about, long_about = None)]
 struct Args {
     #[command(subcommand)]
     cmd: Command,

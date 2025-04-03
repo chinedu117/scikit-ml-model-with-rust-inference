@@ -972,6 +972,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "infer"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "ndarray",
+ "ort",
+ "polars",
+]
+
+[[package]]
 name = "is_terminal_polyfill"
 version = "1.70.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1223,16 +1233,6 @@ dependencies = [
  "sha2",
  "tar",
  "ureq",
-]
-
-[[package]]
-name = "ort_test"
-version = "0.1.0"
-dependencies = [
- "clap",
- "ndarray",
- "ort",
- "polars",
 ]
 
 [[package]]

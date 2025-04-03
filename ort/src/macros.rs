@@ -4,7 +4,7 @@ macro_rules! error_to_response {
     ($res:ident) => {
         match $res {
 
-            Err(ort_test::AppError::Message(s)) => {
+            Err(infer::AppError::Message(s)) => {
                 println!("{}", s);
             }
             _ => {

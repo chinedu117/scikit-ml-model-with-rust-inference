@@ -1,5 +1,5 @@
 use std::time::Instant;
-use ort_test::{get_inference_session, predict, read_csv_file, write_csv};
+use infer::{get_inference_session, predict, read_csv_file, write_csv};
 type Error = Box<dyn std::error::Error>;
 
 fn main() -> Result<(), Error> {
