@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use ort_test::run;
+use ort_test::{error_to_response, run};
 type Error = Box<dyn std::error::Error>;
 
 #[derive(Parser)]
@@ -30,7 +30,12 @@ fn main() -> Result<(), Error> {
             model,
             input,
             output,
-        } => run(&model, &input, &output),
+        } => {
+           let res =  run(&model, &input, &output);
+           if res.is_err() {
+              error_to_response!(res);
+           }
+    }
     };
 
     Ok(())

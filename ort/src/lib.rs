@@ -1,4 +1,4 @@
-use std::{fmt, fs::File, num::NonZero, time::Instant};
+use std::{ fs::File, num::NonZero, time::Instant};
 
 use ndarray::{ArrayBase, Axis};
 use ort::{
@@ -11,23 +11,15 @@ use polars::{
     io::{SerReader, SerWriter},
     series::Series,
 };
+mod errors;
 
-#[derive(Debug, Clone)]
-pub enum AppError {
-    Message(String),
-    Session(String),
-}
 
-impl std::error::Error for AppError {}
+#[macro_use]
+pub mod macros;
 
-impl fmt::Display for AppError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self.clone() {
-            AppError::Message(e) => write!(f, "{}", e),
-            AppError::Session(e) => write!(f, "{}", e),
-        }
-    }
-}
+pub use crate::errors::AppError;
+
+
 
 pub fn get_inference_session(model_path: &str) -> Result<Session, AppError> {
     let num_cores = std::thread::available_parallelism()
