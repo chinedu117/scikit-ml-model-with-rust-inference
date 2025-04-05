@@ -14,11 +14,18 @@ enum Command {
     /// Run inference on the model
     Predict {
         /// ONNX model path
+        #[arg(short, long)]
         model: String,
         /// Input dataset as .csv
+        #[arg(short, long)]
         input: String,
         /// Output file name
+        #[arg(short, long, default_value = "output.csv")]
         output: String,
+
+        /// Overwrite output file if it exists
+        #[arg(short, long, default_value = "false")]
+        overwrite: bool,
     },
 }
 
@@ -30,8 +37,14 @@ fn main() -> Result<(), Error> {
             model,
             input,
             output,
+            overwrite,
         } => {
-           let res =  run(&model, &input, &output);
+           let res =  run(
+            &model, 
+            &input, 
+            &output, 
+            overwrite,
+        );
            if res.is_err() {
               error_to_response!(res);
            }

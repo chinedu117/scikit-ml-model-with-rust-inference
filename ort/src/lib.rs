@@ -1,4 +1,4 @@
-use std::{ fs::File, num::NonZero, time::Instant};
+use std::{fs::File, num::NonZero, path::Path, time::Instant};
 
 use ndarray::{ArrayBase, Axis};
 use ort::{
@@ -13,13 +13,10 @@ use polars::{
 };
 mod errors;
 
-
 #[macro_use]
 pub mod macros;
 
 pub use crate::errors::AppError;
-
-
 
 pub fn get_inference_session(model_path: &str) -> Result<Session, AppError> {
     let num_cores = std::thread::available_parallelism()
@@ -43,27 +40,21 @@ pub fn get_inference_session(model_path: &str) -> Result<Session, AppError> {
 type FeatureTensor = ArrayBase<ndarray::OwnedRepr<f32>, ndarray::Dim<[usize; 2]>>;
 
 pub fn read_csv_file(dataset_path: &str) -> Result<FeatureTensor, AppError> {
-
     let df = CsvReadOptions::default()
         .with_has_header(true)
         .try_into_reader_with_file_path(Some(dataset_path.into()))
         .unwrap()
         .finish()
-        .map_err(|_| {
-            AppError::Message("Unable to read CSV to file.".into())
-        })?;
-    
+        .map_err(|_| AppError::Message("Unable to read CSV to file.".into()))?;
+
     let _target_column = df.column("diabetes").unwrap().clone();
     let df = df.drop("diabetes").unwrap();
 
     df.to_ndarray::<Float32Type>(IndexOrder::C)
-        .map_err(|_| {
-            AppError::Message("Generate features from supplied CSV file.".into())
-        })
+        .map_err(|_| AppError::Message("Generate features from supplied CSV file.".into()))
 }
 
 pub fn predict(features: FeatureTensor, session: Session) -> Result<DataFrame, ort::Error> {
-
     let output: ort::session::SessionOutputs<'_, '_> = session.run(inputs![features]?)?;
 
     let predictions = output["label"].try_extract_tensor::<i64>()?;
@@ -112,11 +103,36 @@ pub fn write_csv(df: &mut DataFrame, destination_path: &str) -> Result<(), AppEr
     Ok(())
 }
 
-
-pub fn run(model_path: &str, dataset_path: &str, output_path: &str) -> Result<(), AppError> {
+pub fn run(
+    model_path: &str,
+    dataset_path: &str,
+    output_path: &str,
+    overwrite: bool,
+) -> Result<(), AppError> {
 
     let start = Instant::now();
     let session = get_inference_session(model_path)?;
+
+    if dataset_path.ends_with(".onnx") {
+        return Err(AppError::Message(
+            "Invalid input model. Only ONNX models are allowed.".into(),
+        ));
+    } else if !Path::new(dataset_path).exists() {
+
+        return Err(AppError::Message("Model not found.".into()));
+    }
+
+    if !output_path.ends_with(".csv") {
+        return Err(AppError::Message(
+            "Invalid output file. Must end with .csv".into(),
+        ));
+    }
+    if Path::new(output_path).exists() && !overwrite {
+        return Err(AppError::Message(format!(
+            "{} already exists. Use --overwrite to overwrite",
+            output_path
+        )));
+    }
 
     let features = read_csv_file(dataset_path)?;
     let mut output_df = predict(features, session)
